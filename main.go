@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ResourceAPI/Core/plugins"
 	"github.com/ResourceAPI/Flatfile-JSON/storage"
+	"github.com/ResourceAPI/Interface/plugins"
 )
 
 type FlatfileJSONPlugin string
@@ -12,7 +12,7 @@ func (FlatfileJSONPlugin) Name() string {
 }
 
 func (FlatfileJSONPlugin) Entrypoint() {
-	plugins.RegisterStorage("Flatfile-JSON", &storage.FlatfileJSONStorage{})
+	plugins.GetRegistry().RegisterStorage("Flatfile-JSON", &storage.FlatfileJSONStorage{})
 }
 
 var CorePlugin FlatfileJSONPlugin

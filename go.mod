@@ -1,8 +1,8 @@
 module github.com/ResourceAPI/Flatfile-JSON
 
-replace github.com/ResourceAPI/Core v0.0.0 => ../Core
+replace github.com/ResourceAPI/Interface v0.0.0 => ../Interface
 
 require (
-	github.com/ResourceAPI/Core v0.0.0
+	github.com/ResourceAPI/Interface v0.0.0
 	github.com/Vilsol/GoLib v0.0.7
 )
