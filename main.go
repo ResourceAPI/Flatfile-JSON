@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ResourceAPI/Flatfile-JSON/storage"
-	"github.com/ResourceAPI/Interface/plugins"
+	"github.com/StratoAPI/Flatfile-JSON/storage"
+	"github.com/StratoAPI/Interface/plugins"
 )
 
 type FlatfileJSONPlugin string

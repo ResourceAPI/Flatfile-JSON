@@ -1,3 +1,3 @@
 # Flatfile-JSON
 
-The Flatfile-JSON storage module for ResourceAPI/Core
+The Flatfile-JSON storage module for StratoAPI/Core
