@@ -13,6 +13,7 @@ func (FlatfileJSONPlugin) Name() string {
 
 func (FlatfileJSONPlugin) Entrypoint() {
 	plugins.GetRegistry().RegisterStorage("Flatfile-JSON", &storage.FlatfileJSONStorage{})
+	plugins.GetRegistry().AssociateFilter("simple", "Flatfile-JSON")
 }
 
 var CorePlugin FlatfileJSONPlugin

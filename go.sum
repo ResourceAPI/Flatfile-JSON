@@ -1,3 +1,6 @@
-github.com/Vilsol/GoLib v0.0.7/go.mod h1:6c39n5wTtt5OSt8vEF1mlnc/lC+Xl0SlHG3vboC2pEQ=
-github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
-github.com/gorilla/mux v1.6.1/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+github.com/StratoAPI/Interface v0.0.4 h1:QsoEeeJUe/+K9TToFwYexoIlhvj6ofl27ZnJNwB35mo=
+github.com/StratoAPI/Interface v0.0.4/go.mod h1:jLlD9bBfAuFE0VN6FkrvX3cMhuDnbikzonCMprOLsyw=
+github.com/StratoAPI/Interface v0.0.5 h1:pgQcXVIOAzC6HtZnVk67FCIBVNG7mgDwX3T2ZPlIhzQ=
+github.com/StratoAPI/Interface v0.0.5/go.mod h1:jLlD9bBfAuFE0VN6FkrvX3cMhuDnbikzonCMprOLsyw=
+github.com/StratoAPI/Interface v0.0.6 h1:yZ3mzdy0zLDZKnXdpoD0jaJmBGaBOtT1nRedujW4O0s=
+github.com/StratoAPI/Interface v0.0.6/go.mod h1:jLlD9bBfAuFE0VN6FkrvX3cMhuDnbikzonCMprOLsyw=

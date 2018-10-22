@@ -3,8 +3,11 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StratoAPI/Interface/filter"
 	"io/ioutil"
 	"os"
+	"reflect"
+	"strings"
 )
 
 type FlatfileJSONStorage struct {
@@ -44,16 +47,21 @@ func (storage *FlatfileJSONStorage) Stop() error {
 }
 
 // Retrieve resources.
-func (storage *FlatfileJSONStorage) GetResources(resource string, filters []interface{}) ([]map[string]interface{}, error) {
+func (storage *FlatfileJSONStorage) GetResources(resource string, filters []filter.ProcessedFilter) ([]map[string]interface{}, error) {
 	resources, ok := storage.Data[resource]
 
 	if !ok {
 		return make([]map[string]interface{}, 0), nil
 	}
 
-	// TODO Filters
+	resultList := make([]map[string]interface{}, 0)
+	for _, res := range resources {
+		if resourceComplies(res, filters) {
+			resultList = append(resultList, res)
+		}
+	}
 
-	return resources, nil
+	return resultList, nil
 }
 
 // Create resources.
@@ -72,12 +80,12 @@ func (storage *FlatfileJSONStorage) CreateResources(resource string, data []map[
 }
 
 // Update resources.
-func (storage *FlatfileJSONStorage) UpdateResources(resource string, data []map[string]interface{}, filters []interface{}) error {
+func (storage *FlatfileJSONStorage) UpdateResources(resource string, data []map[string]interface{}, filters []filter.ProcessedFilter) error {
 	return nil // TODO
 }
 
 // Delete resources.
-func (storage *FlatfileJSONStorage) DeleteResources(resource string, filters []interface{}) error {
+func (storage *FlatfileJSONStorage) DeleteResources(resource string, filters []filter.ProcessedFilter) error {
 	return nil // TODO
 }
 
@@ -95,4 +103,119 @@ func (storage *FlatfileJSONStorage) Save() {
 	if err != nil {
 		fmt.Println("Failed to save: " + err.Error())
 	}
+}
+
+func resourceComplies(res map[string]interface{}, filters []filter.ProcessedFilter) bool {
+	for _, f := range filters {
+		switch f.Type {
+		case "simple":
+			casted, ok := f.Data.(*filter.Simple)
+
+			if !ok {
+				return false
+			}
+
+			data, found := resolveKey(res, strings.Split(casted.Key, "."))
+
+			if !found {
+				return false
+			}
+
+			reflect.ValueOf(data).Type().Kind()
+
+			if casted.Operation != filter.OpEQ && casted.Operation != filter.OpNEQ {
+				k := reflect.ValueOf(data).Type().Kind()
+				if k == reflect.Invalid ||
+					k == reflect.Bool ||
+					k == reflect.Array ||
+					k == reflect.Chan ||
+					k == reflect.Func ||
+					k == reflect.Interface ||
+					k == reflect.Map ||
+					k == reflect.Ptr ||
+					k == reflect.Slice ||
+					k == reflect.String ||
+					k == reflect.Struct ||
+					k == reflect.UnsafePointer {
+					return false
+				}
+			}
+
+			switch casted.Operation {
+			case filter.OpEQ:
+				if data != casted.Value {
+					return false
+				}
+			case filter.OpNEQ:
+				if data == casted.Value {
+					return false
+				}
+			case filter.OpLT:
+				fallthrough
+			case filter.OpLTE:
+				fallthrough
+			case filter.OpGT:
+				fallthrough
+			case filter.OpGTE:
+				dataFloat, err := getFloat(data)
+
+				if err != nil {
+					return false
+				}
+
+				valueFloat, err := getFloat(casted.Value)
+
+				if err != nil {
+					return false
+				}
+
+				switch casted.Operation {
+				case filter.OpLT:
+					if dataFloat >= valueFloat {
+						return false
+					}
+				case filter.OpLTE:
+					if dataFloat > valueFloat {
+						return false
+					}
+				case filter.OpGT:
+					if dataFloat <= valueFloat {
+						return false
+					}
+				case filter.OpGTE:
+					if dataFloat < valueFloat {
+						return false
+					}
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+func resolveKey(res map[string]interface{}, key []string) (interface{}, bool) {
+	data, ok := res[key[0]]
+
+	if !ok {
+		return nil, false
+	}
+
+	if subMap, ok := data.(map[string]interface{}); ok {
+		return resolveKey(subMap, key[1:])
+	}
+
+	return data, true
+}
+
+var floatType = reflect.TypeOf(float64(0))
+
+func getFloat(unk interface{}) (float64, error) {
+	v := reflect.ValueOf(unk)
+	v = reflect.Indirect(v)
+	if !v.Type().ConvertibleTo(floatType) {
+		return 0, fmt.Errorf("cannot convert %v to float64", v.Type())
+	}
+	fv := v.Convert(floatType)
+	return fv.Float(), nil
 }
