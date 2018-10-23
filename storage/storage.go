@@ -24,7 +24,11 @@ func (storage *FlatfileJSONStorage) Initialize() error {
 
 	if _, err := os.Stat(storage.Location); err == nil {
 		bytes, _ := ioutil.ReadFile(storage.Location)
-		json.Unmarshal(bytes, &data)
+		err := json.Unmarshal(bytes, &data)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	if data == nil {
@@ -33,17 +37,18 @@ func (storage *FlatfileJSONStorage) Initialize() error {
 
 	storage.Data = data
 
-	return nil // TODO
+	return nil
 }
 
 // Start the storage. Must be a blocking call.
 func (storage *FlatfileJSONStorage) Start() error {
-	return nil // TODO
+	return nil
 }
 
 // Graceful stopping of the storage with a 30s timeout.
 func (storage *FlatfileJSONStorage) Stop() error {
-	return nil // TODO
+	storage.Save()
+	return nil
 }
 
 // Retrieve resources.
@@ -80,13 +85,44 @@ func (storage *FlatfileJSONStorage) CreateResources(resource string, data []map[
 }
 
 // Update resources.
-func (storage *FlatfileJSONStorage) UpdateResources(resource string, data []map[string]interface{}, filters []filter.ProcessedFilter) error {
-	return nil // TODO
+func (storage *FlatfileJSONStorage) UpdateResources(resource string, data map[string]interface{}, filters []filter.ProcessedFilter) error {
+	resources, ok := storage.Data[resource]
+
+	if !ok {
+		return nil
+	}
+
+	for i, res := range resources {
+		if resourceComplies(res, filters) {
+			resources[i] = updateResource(res, data)
+		}
+	}
+
+	storage.Save()
+
+	return nil
 }
 
 // Delete resources.
 func (storage *FlatfileJSONStorage) DeleteResources(resource string, filters []filter.ProcessedFilter) error {
-	return nil // TODO
+	resources, ok := storage.Data[resource]
+
+	if !ok {
+		return nil
+	}
+
+	savedResources := resources[:0]
+	for _, res := range resources {
+		if !resourceComplies(res, filters) {
+			savedResources = append(savedResources, res)
+		}
+	}
+
+	storage.Data[resource] = savedResources
+
+	storage.Save()
+
+	return nil
 }
 
 func (storage *FlatfileJSONStorage) Save() {
@@ -218,4 +254,20 @@ func getFloat(unk interface{}) (float64, error) {
 	}
 	fv := v.Convert(floatType)
 	return fv.Float(), nil
+}
+
+func updateResource(resource map[string]interface{}, data map[string]interface{}) map[string]interface{} {
+	for k, v := range data {
+		if subData, ok := v.(map[string]interface{}); ok {
+			if _, ok := resource[k].(map[string]interface{}); ok {
+				resource[k] = updateResource(resource[k].(map[string]interface{}), subData)
+			} else {
+				resource[k] = subData[k]
+			}
+		} else {
+			resource[k] = v
+		}
+	}
+
+	return resource
 }
