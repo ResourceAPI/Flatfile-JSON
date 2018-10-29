@@ -3,6 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/StratoAPI/Flatfile-JSON/config"
 	"github.com/StratoAPI/Interface/filter"
 	"io/ioutil"
 	"os"
@@ -19,8 +20,7 @@ type FlatfileJSONStorage struct {
 func (storage *FlatfileJSONStorage) Initialize() error {
 	var data map[string][]map[string]interface{}
 
-	// TODO Read from config
-	storage.Location = "data.json"
+	storage.Location = config.Get().Config.Location
 
 	if _, err := os.Stat(storage.Location); err == nil {
 		bytes, _ := ioutil.ReadFile(storage.Location)
